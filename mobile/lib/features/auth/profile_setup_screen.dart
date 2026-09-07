@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/phone.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../providers/auth_controller.dart';
 import '../../services/storage_service.dart';
@@ -49,7 +50,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     try {
       var photoUrl = '';
       if (_photo != null) {
-        photoUrl = await StorageService().uploadProfilePhoto(_photo!);
+        try {
+          photoUrl = await StorageService().uploadProfilePhoto(_photo!);
+        } catch (_) {
+          photoUrl = '';
+        }
       }
       if (!mounted) return;
       await context.read<AuthController>().completeProfile(
@@ -57,7 +62,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             photoUrl: photoUrl,
           );
     } catch (e) {
-      setState(() => _error = e.toString());
+      setState(() => _error = authErrorMessage(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }

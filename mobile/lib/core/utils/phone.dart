@@ -35,6 +35,14 @@ String phoneToAuthEmail(String phone) {
   return '$digits@users.armessenger.app';
 }
 
+String phoneFromAuthEmail(String? email) {
+  const suffix = '@users.armessenger.app';
+  if (email == null || !email.endsWith(suffix)) return '';
+  final digits = email.substring(0, email.length - suffix.length);
+  if (digits.length < 8) return '';
+  return '+$digits';
+}
+
 String pinToAuthPassword(String phone, String pin) {
   final digest = sha256.convert(utf8.encode('ar-messenger|$phone|$pin'));
   return 'Pin${digest.toString().substring(0, 24)}!';
@@ -59,6 +67,9 @@ String authErrorMessage(Object error) {
   }
   if (text.contains('network-request-failed')) {
     return 'No internet. Check your connection and try again.';
+  }
+  if (text.contains('permission-denied') || text.contains('PERMISSION_DENIED')) {
+    return 'Could not save your profile. Close the app, open it again, and tap Continue.';
   }
   return text.replaceFirst(RegExp(r'^\[.*?\]\s*'), '');
 }

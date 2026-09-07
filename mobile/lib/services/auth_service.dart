@@ -70,12 +70,20 @@ class AuthService {
       throw StateError('Not signed in');
     }
 
+    final resolvedPhone = [
+      phone,
+      phoneFromAuthEmail(user.email),
+      user.phoneNumber,
+    ].whereType<String>().firstWhere((value) => value.length >= 8, orElse: () => '');
+    if (resolvedPhone.length < 8) {
+      throw StateError('Missing phone number. Go back and enter your mobile number again.');
+    }
+
     final existing = await _db.collection(Collections.users).doc(user.uid).get();
     if (existing.exists) {
       await _db.collection(Collections.users).doc(user.uid).update({
         'displayName': displayName,
         'photoUrl': photoUrl,
-        if (phone != null && phone.isNotEmpty) 'phone': phone,
         'isOnline': true,
         'lastSeen': FieldValue.serverTimestamp(),
       });
@@ -84,7 +92,7 @@ class AuthService {
 
     final profile = UserProfile(
       id: user.uid,
-      phone: phone ?? user.phoneNumber ?? '',
+      phone: resolvedPhone,
       displayName: displayName,
       photoUrl: photoUrl,
       about: 'Available',

@@ -43,21 +43,25 @@ class _OtpScreenState extends State<OtpScreen> {
   Widget build(BuildContext context) {
     final phone = context.watch<AuthController>().pendingPhone ?? '';
     return Scaffold(
-      appBar: AppBar(title: const Text('Verify OTP')),
+      appBar: AppBar(title: const Text('Enter PIN')),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Code sent to $phone', style: const TextStyle(color: AppColors.muted)),
+            Text(
+              'No SMS is used. For $phone, create a 6-digit PIN if this is your first time, or enter the same PIN you already set.',
+              style: const TextStyle(color: AppColors.muted, height: 1.4),
+            ),
             const SizedBox(height: 24),
             TextField(
               controller: _code,
               keyboardType: TextInputType.number,
               maxLength: 6,
+              obscureText: true,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: const InputDecoration(
-                labelText: '6-digit OTP',
+                labelText: '6-digit PIN',
                 counterText: '',
               ),
             ),
@@ -66,7 +70,7 @@ class _OtpScreenState extends State<OtpScreen> {
               Text(_error!, style: const TextStyle(color: AppColors.danger)),
             ],
             const Spacer(),
-            PrimaryButton(label: 'Verify', onPressed: _submit, loading: _loading),
+            PrimaryButton(label: 'Continue', onPressed: _submit, loading: _loading),
           ],
         ),
       ),

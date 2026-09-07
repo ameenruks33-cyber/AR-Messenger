@@ -68,7 +68,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Enter your UAE mobile number. Example: 50 123 4567 or +971501234567. Do not keep a leading 0 after +971.',
+                'Enter your UAE mobile number. Example: 50 123 4567 or +971501234567.',
                 style: TextStyle(color: AppColors.muted, height: 1.4),
               ),
               const SizedBox(height: 32),
@@ -86,7 +86,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
               if (_phone.text.trim().isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  'OTP will be sent to ${normalizePhoneNumber(_phone.text)}',
+                  'Continue with ${normalizePhoneNumber(_phone.text)}',
                   style: const TextStyle(color: AppColors.muted, fontSize: 13),
                 ),
               ],
@@ -95,7 +95,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 Text(_error!, style: const TextStyle(color: AppColors.danger)),
               ],
               const Spacer(),
-              PrimaryButton(label: 'Send OTP', onPressed: _submit, loading: _loading),
+              PrimaryButton(label: 'Continue', onPressed: _submit, loading: _loading),
             ],
           ),
         ),

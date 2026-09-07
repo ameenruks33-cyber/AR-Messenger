@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../core/constants/app_constants.dart';
+import '../core/utils/phone.dart';
 import '../models/user_profile.dart';
 
 class AuthService {
@@ -18,35 +19,32 @@ class AuthService {
   User? get currentUser => _auth.currentUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  Future<void> sendOtp({
+  Future<UserCredential> signInWithPhonePin({
     required String phoneNumber,
-    required void Function(String verificationId) onCodeSent,
-    required void Function(FirebaseAuthException error) onFailed,
-    required void Function(PhoneAuthCredential credential) onAutoVerified,
-  }) {
-    return _auth.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      timeout: const Duration(seconds: 60),
-      verificationCompleted: onAutoVerified,
-      verificationFailed: onFailed,
-      codeSent: (verificationId, _) => onCodeSent(verificationId),
-      codeAutoRetrievalTimeout: (_) {},
-    );
-  }
-
-  Future<UserCredential> verifyOtp({
-    required String verificationId,
-    required String smsCode,
-  }) {
-    final credential = PhoneAuthProvider.credential(
-      verificationId: verificationId,
-      smsCode: smsCode,
-    );
-    return _auth.signInWithCredential(credential);
-  }
-
-  Future<UserCredential> signInWithCredential(PhoneAuthCredential credential) {
-    return _auth.signInWithCredential(credential);
+    required String pin,
+  }) async {
+    final email = phoneToAuthEmail(phoneNumber);
+    final password = pinToAuthPassword(phoneNumber, pin);
+    try {
+      return await _auth.signInWithEmailAndPassword(email: email, password: password);
+    } on FirebaseAuthException catch (error) {
+      final unknownAccount = error.code == 'user-not-found' ||
+          error.code == 'invalid-credential' ||
+          error.code == 'wrong-password' ||
+          error.code == 'INVALID_LOGIN_CREDENTIALS';
+      if (!unknownAccount) rethrow;
+      try {
+        return await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      } on FirebaseAuthException catch (createError) {
+        if (createError.code == 'email-already-in-use') {
+          throw FirebaseAuthException(
+            code: 'wrong-pin',
+            message: 'Wrong PIN for this number.',
+          );
+        }
+        rethrow;
+      }
+    }
   }
 
   Future<UserProfile?> loadProfile(String uid) async {
@@ -65,6 +63,7 @@ class AuthService {
   Future<void> createProfile({
     required String displayName,
     required String photoUrl,
+    String? phone,
   }) async {
     final user = _auth.currentUser;
     if (user == null) {
@@ -76,6 +75,7 @@ class AuthService {
       await _db.collection(Collections.users).doc(user.uid).update({
         'displayName': displayName,
         'photoUrl': photoUrl,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
         'isOnline': true,
         'lastSeen': FieldValue.serverTimestamp(),
       });
@@ -84,7 +84,7 @@ class AuthService {
 
     final profile = UserProfile(
       id: user.uid,
-      phone: user.phoneNumber ?? '',
+      phone: phone ?? user.phoneNumber ?? '',
       displayName: displayName,
       photoUrl: photoUrl,
       about: 'Available',

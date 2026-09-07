@@ -42,46 +42,29 @@ class AuthController extends ChangeNotifier {
 
   Future<void> sendOtp(String phone) async {
     pendingPhone = phone;
-    verificationId = null;
-    final done = Completer<void>();
-    await _auth.sendOtp(
-      phoneNumber: phone,
-      onCodeSent: (id) {
-        verificationId = id;
-        notifyListeners();
-        if (!done.isCompleted) done.complete();
-      },
-      onFailed: (error) {
-        if (!done.isCompleted) done.completeError(error);
-      },
-      onAutoVerified: (credential) async {
-        await _auth.signInWithCredential(credential);
-        if (!done.isCompleted) done.complete();
-      },
-    );
-    try {
-      await done.future.timeout(const Duration(seconds: 75));
-    } on TimeoutException {
-      throw FirebaseAuthException(
-        code: 'otp-timeout',
-        message: 'Firebase did not send an OTP. Enable Phone sign-in and add the Android SHA certificates in Firebase.',
-      );
-    }
+    notifyListeners();
   }
 
   Future<void> verifyOtp(String code) async {
-    final id = verificationId;
-    if (id == null) {
-      throw StateError('No OTP session. Request a new code.');
+    final phone = pendingPhone;
+    if (phone == null || phone.isEmpty) {
+      throw StateError('Enter your mobile number first.');
     }
-    await _auth.verifyOtp(verificationId: id, smsCode: code);
+    if (code.length != 6) {
+      throw StateError('Enter a 6-digit PIN.');
+    }
+    await _auth.signInWithPhonePin(phoneNumber: phone, pin: code);
   }
 
   Future<void> completeProfile({
     required String displayName,
     required String photoUrl,
   }) async {
-    await _auth.createProfile(displayName: displayName, photoUrl: photoUrl);
+    await _auth.createProfile(
+      displayName: displayName,
+      photoUrl: photoUrl,
+      phone: pendingPhone,
+    );
     if (_user != null) {
       _profile = await _auth.loadProfile(_user!.uid);
       await _auth.setPresence(true);

@@ -29,7 +29,7 @@ export default function HomePage() {
             </a>
           </div>
           <p className="mt-4 text-sm text-emerald-100">
-            Android 8+ · The download is the AR Messenger APK. Allow camera, location, microphone, and notifications when asked.
+            Android 8+ · Free login uses your phone number and a 6-digit PIN. No paid SMS. Allow camera, location, microphone, and notifications when asked.
           </p>
         </div>
         <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
@@ -38,7 +38,7 @@ export default function HomePage() {
             <li>1. Tap Download Android app</li>
             <li>2. Allow install from this browser if Android asks</li>
             <li>3. Open AR Messenger</li>
-            <li>4. Enter your mobile number and OTP</li>
+            <li>4. Enter your mobile number and a 6-digit PIN</li>
             <li>5. Use Company → Check In at the office</li>
           </ol>
         </div>

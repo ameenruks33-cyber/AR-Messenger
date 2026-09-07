@@ -178,7 +178,11 @@ service cloud.firestore {
         && request.resource.data.role == 'employee'
         && request.resource.data.companyId == ''
         && request.resource.data.employeeId == ''
-        && request.resource.data.phone == request.auth.token.phone_number;
+        && (
+          request.auth.token.phone_number == null
+            ? request.resource.data.phone.matches('^\\+[0-9]{8,15}$')
+            : request.resource.data.phone == request.auth.token.phone_number
+        );
       allow update: if isAuthenticated()
         && request.auth.uid == uid
         && isValidUser(request.resource.data)

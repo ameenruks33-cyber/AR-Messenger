@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+
 import '../constants/app_constants.dart';
 
 String normalizePhoneNumber(String input) {
@@ -26,8 +30,24 @@ String normalizePhoneNumber(String input) {
   return raw;
 }
 
+String phoneToAuthEmail(String phone) {
+  final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+  return '$digits@users.armessenger.app';
+}
+
+String pinToAuthPassword(String phone, String pin) {
+  final digest = sha256.convert(utf8.encode('ar-messenger|$phone|$pin'));
+  return 'Pin${digest.toString().substring(0, 24)}!';
+}
+
 String authErrorMessage(Object error) {
   final text = error.toString();
+  if (text.contains('wrong-pin') || text.contains('wrong-password') || text.contains('email-already-in-use')) {
+    return 'Wrong PIN. Enter the 6-digit PIN you created for this number.';
+  }
+  if (text.contains('weak-password')) {
+    return 'Use a 6-digit PIN.';
+  }
   if (text.contains('invalid-phone-number')) {
     return 'That phone number is not valid. Use +9715XXXXXXXX without a leading 0.';
   }
@@ -35,19 +55,10 @@ String authErrorMessage(Object error) {
     return 'Too many attempts. Wait a few minutes and try again.';
   }
   if (text.contains('operation-not-allowed')) {
-    return 'Phone sign-in is not enabled yet. Try again in a minute.';
+    return 'Email/PIN sign-in is not enabled in Firebase.';
   }
-  if (text.contains('quota-exceeded')) {
-    return 'SMS limit reached. Try again later.';
-  }
-  if (text.contains('app-not-authorized') || text.contains('missing-client-identifier')) {
-    return 'This app install is not authorized for OTP. Reinstall the latest APK from the website.';
-  }
-  if (text.contains('captcha-check-failed') || text.contains('recaptcha')) {
-    return 'Google could not verify the app. Complete the browser check if it opens, then retry.';
-  }
-  if (text.contains('otp-timeout') || text.contains('session-expired')) {
-    return 'Firebase did not send an OTP. Check your number and internet, then retry.';
+  if (text.contains('network-request-failed')) {
+    return 'No internet. Check your connection and try again.';
   }
   return text.replaceFirst(RegExp(r'^\[.*?\]\s*'), '');
 }

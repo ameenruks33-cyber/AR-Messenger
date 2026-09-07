@@ -1,0 +1,35 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function underLimit(bytes) {
+      return request.resource.size < bytes;
+    }
+
+    match /users/{uid}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(uid) && isImage() && underLimit(2 * 1024 * 1024);
+    }
+
+    match /attendance/{uid}/{allPaths=**} {
+      allow read: if isOwner(uid) || isAuthenticated();
+      allow write: if isOwner(uid) && isImage() && underLimit(3 * 1024 * 1024);
+    }
+
+    match /chats/{chatId}/{uid}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(uid) && underLimit(20 * 1024 * 1024);
+    }
+  }
+}

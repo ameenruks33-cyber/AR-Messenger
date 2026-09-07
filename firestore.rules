@@ -1,0 +1,298 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: Firebase Auth uid
+    // Fields:
+    //   - phone: string (required, immutable, E.164)
+    //   - displayName: string (required, 2-80)
+    //   - photoUrl: string (optional, <= 2048)
+    //   - about: string (optional, <= 140)
+    //   - role: string (server-managed: super_admin|hr_admin|company_admin|manager|employee)
+    //   - companyId: string (server-managed)
+    //   - employeeId: string (server-managed)
+    //   - isOnline: bool
+    //   - lastSeen: timestamp
+    //   - fcmToken: string (optional)
+    //   - createdAt: timestamp
+    //
+    // Collection: employees
+    // Document ID: auto
+    // Fields:
+    //   - userId, companyId, name, phone, role, status, department, photoUrl
+    //
+    // Collection: companies
+    // Fields: name, workStartHour, lateAfterMinutes, createdAt
+    //
+    // Collection: offices
+    // Fields: companyId, name, city, latitude, longitude, radiusMeters, attendanceEnabled
+    //
+    // Collection: chats
+    // Fields: type, memberIds, name, photoUrl, lastMessage, lastMessageAt, createdBy, companyId, pinned
+    // Subcollection messages: senderId, type, text, mediaUrl, replyTo, deleted, readBy, createdAt, editedAt
+    //
+    // Collection: attendance
+    // Fields: employeeId, employeeName, companyId, userId, type, timestamp, latitude, longitude,
+    //         accuracy, officeId, officeName, selfieUrl, deviceId, verificationStatus,
+    //         mockLocation, suspiciousMovement, deviceAuthorized, createdAt
+    //
+    // Collection: devices
+    // Fields: userId, employeeId, platform, model, authorized, createdAt, lastSeenAt
+    //
+    // Collection: announcements
+    // Fields: companyId, title, body, createdBy, createdAt
+    //
+    // Collection: notifications
+    // Fields: userId, title, body, data, read, createdAt
+    //
+    // Collection: auditLogs
+    // Fields: actorId, action, target, createdAt, metadata
+    //
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function userPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function userData() {
+      return get(userPath()).data;
+    }
+
+    function userRole() {
+      return exists(userPath()) ? userData().role : 'employee';
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && userRole() in ['super_admin', 'hr_admin', 'company_admin'];
+    }
+
+    function isHrOrAbove() {
+      return isAuthenticated() && userRole() in ['super_admin', 'hr_admin'];
+    }
+
+    function isManagerOrAbove() {
+      return isAuthenticated() && userRole() in ['super_admin', 'hr_admin', 'company_admin', 'manager'];
+    }
+
+    function sameCompany(companyId) {
+      return exists(userPath()) && userData().companyId is string && userData().companyId == companyId && companyId.size() > 0;
+    }
+
+    function isValidString(value, minLen, maxLen) {
+      return value is string && value.size() >= minLen && value.size() <= maxLen;
+    }
+
+    function isValidLat(value) {
+      return value is number && value >= -90 && value <= 90;
+    }
+
+    function isValidLng(value) {
+      return value is number && value >= -180 && value <= 180;
+    }
+
+    function isValidUser(data) {
+      return isValidString(data.displayName, 2, 80)
+        && data.phone is string && data.phone.size() >= 8 && data.phone.size() <= 20
+        && data.role is string && data.role in ['super_admin', 'hr_admin', 'company_admin', 'manager', 'employee']
+        && data.companyId is string && data.companyId.size() <= 80
+        && data.employeeId is string && data.employeeId.size() <= 80
+        && data.photoUrl is string && data.photoUrl.size() <= 2048
+        && data.about is string && data.about.size() <= 140
+        && data.isOnline is bool;
+    }
+
+    function isValidEmployee(data) {
+      return isValidString(data.name, 2, 80)
+        && data.phone is string && data.phone.size() >= 8 && data.phone.size() <= 20
+        && data.companyId is string && data.companyId.size() > 0 && data.companyId.size() <= 80
+        && data.role is string && data.role in ['super_admin', 'hr_admin', 'company_admin', 'manager', 'employee']
+        && data.status is string && data.status in ['pending', 'active', 'inactive']
+        && data.department is string && data.department.size() <= 80
+        && data.userId is string && data.userId.size() <= 80
+        && data.photoUrl is string && data.photoUrl.size() <= 2048;
+    }
+
+    function isValidOffice(data) {
+      return isValidString(data.name, 2, 80)
+        && isValidString(data.city, 2, 80)
+        && data.companyId is string && data.companyId.size() > 0
+        && isValidLat(data.latitude)
+        && isValidLng(data.longitude)
+        && data.radiusMeters is number && data.radiusMeters >= 20 && data.radiusMeters <= 2000
+        && data.attendanceEnabled is bool;
+    }
+
+    function isValidChat(data) {
+      return data.type is string && data.type in ['direct', 'group']
+        && data.memberIds is list && data.memberIds.size() >= 2 && data.memberIds.size() <= 256
+        && request.auth.uid in data.memberIds
+        && data.name is string && data.name.size() <= 80
+        && data.photoUrl is string && data.photoUrl.size() <= 2048
+        && data.lastMessage is string && data.lastMessage.size() <= 500
+        && data.createdBy is string
+        && data.companyId is string && data.companyId.size() <= 80
+        && data.pinned is bool;
+    }
+
+    function isValidMessage(data) {
+      return data.senderId == request.auth.uid
+        && data.type is string && data.type in ['text', 'image', 'video', 'audio', 'file', 'location', 'system']
+        && data.text is string && data.text.size() <= 4000
+        && data.mediaUrl is string && data.mediaUrl.size() <= 2048
+        && data.deleted is bool
+        && data.readBy is list && data.readBy.size() <= 256;
+    }
+
+    function isValidAttendance(data) {
+      return data.userId == request.auth.uid
+        && data.employeeId is string && data.employeeId.size() > 0
+        && data.employeeName is string && data.employeeName.size() <= 80
+        && data.companyId is string && data.companyId.size() > 0
+        && data.type is string && data.type in ['check_in', 'check_out']
+        && data.timestamp is timestamp
+        && isValidLat(data.latitude)
+        && isValidLng(data.longitude)
+        && data.officeId is string && data.officeId.size() > 0
+        && data.officeName is string && data.officeName.size() <= 80
+        && data.selfieUrl is string && data.selfieUrl.size() > 0 && data.selfieUrl.size() <= 2048
+        && data.deviceId is string && data.deviceId.size() > 0 && data.deviceId.size() <= 128
+        && data.verificationStatus == 'pending'
+        && data.mockLocation is bool
+        && data.suspiciousMovement is bool
+        && data.deviceAuthorized is bool;
+    }
+
+    match /users/{uid} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.auth.uid == uid
+        && isValidUser(request.resource.data)
+        && request.resource.data.role == 'employee'
+        && request.resource.data.companyId == ''
+        && request.resource.data.employeeId == ''
+        && request.resource.data.phone == request.auth.token.phone_number;
+      allow update: if isAuthenticated()
+        && request.auth.uid == uid
+        && isValidUser(request.resource.data)
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.companyId == resource.data.companyId
+        && request.resource.data.employeeId == resource.data.employeeId
+        && request.resource.data.phone == resource.data.phone
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['displayName', 'photoUrl', 'about', 'isOnline', 'lastSeen', 'fcmToken']);
+      allow delete: if false;
+    }
+
+    match /employees/{employeeId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid
+        || sameCompany(resource.data.companyId)
+      );
+      allow create: if isAdmin() && isValidEmployee(request.resource.data) && sameCompany(request.resource.data.companyId);
+      allow update: if isAdmin() && isValidEmployee(request.resource.data) && sameCompany(resource.data.companyId);
+      allow delete: if isHrOrAbove();
+    }
+
+    match /companies/{companyId} {
+      allow read: if isAuthenticated() && sameCompany(companyId);
+      allow create, update: if isHrOrAbove();
+      allow delete: if false;
+    }
+
+    match /offices/{officeId} {
+      allow read: if isAuthenticated() && sameCompany(resource.data.companyId);
+      allow create: if isAdmin() && isValidOffice(request.resource.data);
+      allow update: if isAdmin() && isValidOffice(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /chats/{chatId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.memberIds;
+      allow create: if isAuthenticated() && isValidChat(request.resource.data) && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isAuthenticated()
+        && request.auth.uid in resource.data.memberIds
+        && isValidChat(request.resource.data)
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['lastMessage', 'lastMessageAt', 'name', 'photoUrl', 'pinned', 'memberIds']);
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.createdBy;
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.memberIds;
+        allow create: if isAuthenticated()
+          && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.memberIds
+          && isValidMessage(request.resource.data);
+        allow update: if isAuthenticated()
+          && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.memberIds
+          && request.resource.data.senderId == resource.data.senderId
+          && (
+            (
+              resource.data.senderId == request.auth.uid
+              && request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(['text', 'editedAt', 'deleted', 'mediaUrl', 'readBy'])
+              && isValidMessage(request.resource.data)
+            )
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+          );
+        allow delete: if false;
+      }
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid
+        || (isManagerOrAbove() && sameCompany(resource.data.companyId))
+      );
+      allow create: if isAuthenticated() && isValidAttendance(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    match /devices/{deviceId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.platform is string
+        && request.resource.data.model is string
+        && request.resource.data.model.size() <= 80
+        && request.resource.data.authorized is bool;
+      allow update: if isAuthenticated() && (
+        (request.auth.uid == resource.data.userId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastSeenAt', 'model'])
+          && request.resource.data.authorized == resource.data.authorized)
+        || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['authorized', 'lastSeenAt']))
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if isAuthenticated() && sameCompany(resource.data.companyId);
+      allow create: if isManagerOrAbove()
+        && request.resource.data.createdBy == request.auth.uid
+        && isValidString(request.resource.data.title, 2, 120)
+        && isValidString(request.resource.data.body, 2, 4000)
+        && sameCompany(request.resource.data.companyId);
+      allow update, delete: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read, update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create, delete: if false;
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create, update, delete: if false;
+    }
+  }
+}

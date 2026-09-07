@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/phone.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../providers/auth_controller.dart';
 
@@ -26,12 +27,11 @@ class _PhoneScreenState extends State<PhoneScreen> {
   }
 
   Future<void> _submit() async {
-    final raw = _phone.text.replaceAll(RegExp(r'[\s-]'), '');
-    if (raw.length < 8) {
-      setState(() => _error = 'Enter a valid mobile number.');
+    final phone = normalizePhoneNumber(_phone.text);
+    if (phone.length < 10) {
+      setState(() => _error = 'Enter a valid mobile number, for example +9715XXXXXXXX.');
       return;
     }
-    final phone = raw.startsWith('+') ? raw : '${AppConstants.defaultCountryCode}$raw';
     setState(() {
       _loading = true;
       _error = null;
@@ -41,7 +41,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
       if (!mounted) return;
       Navigator.of(context).pushNamed('/otp');
     } catch (e) {
-      setState(() => _error = e.toString());
+      setState(() => _error = authErrorMessage(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -68,7 +68,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Enter your mobile number. We will send an OTP to verify your account.',
+                'Enter your UAE mobile number. Example: 50 123 4567 or +971501234567. Do not keep a leading 0 after +971.',
                 style: TextStyle(color: AppColors.muted, height: 1.4),
               ),
               const SizedBox(height: 32),
@@ -76,12 +76,20 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 controller: _phone,
                 keyboardType: TextInputType.phone,
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+]'))],
+                onChanged: (_) => setState(() {}),
                 decoration: const InputDecoration(
                   labelText: 'Mobile number',
-                  hintText: '+971 5X XXX XXXX',
+                  hintText: '50 123 4567',
                   prefixIcon: Icon(Icons.phone_outlined),
                 ),
               ),
+              if (_phone.text.trim().isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'OTP will be sent to ${normalizePhoneNumber(_phone.text)}',
+                  style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                ),
+              ],
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Text(_error!, style: const TextStyle(color: AppColors.danger)),

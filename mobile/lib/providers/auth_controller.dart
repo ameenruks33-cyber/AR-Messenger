@@ -42,19 +42,31 @@ class AuthController extends ChangeNotifier {
 
   Future<void> sendOtp(String phone) async {
     pendingPhone = phone;
+    verificationId = null;
+    final done = Completer<void>();
     await _auth.sendOtp(
       phoneNumber: phone,
       onCodeSent: (id) {
         verificationId = id;
         notifyListeners();
+        if (!done.isCompleted) done.complete();
       },
       onFailed: (error) {
-        throw error;
+        if (!done.isCompleted) done.completeError(error);
       },
       onAutoVerified: (credential) async {
         await _auth.signInWithCredential(credential);
+        if (!done.isCompleted) done.complete();
       },
     );
+    try {
+      await done.future.timeout(const Duration(seconds: 75));
+    } on TimeoutException {
+      throw FirebaseAuthException(
+        code: 'otp-timeout',
+        message: 'Firebase did not send an OTP. Enable Phone sign-in and add the Android SHA certificates in Firebase.',
+      );
+    }
   }
 
   Future<void> verifyOtp(String code) async {

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/phone.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../providers/auth_controller.dart';
 
@@ -32,7 +33,7 @@ class _OtpScreenState extends State<OtpScreen> {
     try {
       await context.read<AuthController>().verifyOtp(_code.text.trim());
     } catch (e) {
-      setState(() => _error = e.toString());
+      setState(() => _error = authErrorMessage(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }

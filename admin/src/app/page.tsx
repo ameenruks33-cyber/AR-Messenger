@@ -1,5 +1,3 @@
-const APK_URL = "https://github.com/ameenruks33-cyber/AR-Messenger/releases/latest/download/app-release.apk";
-
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#075E54] text-white">
@@ -20,7 +18,8 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
-              href={APK_URL}
+              href="/downloads/ar-messenger.apk"
+              download="AR-Messenger.apk"
               className="rounded-full bg-[#25D366] px-6 py-3 font-bold text-[#075E54]"
             >
               Download Android app
@@ -30,7 +29,7 @@ export default function HomePage() {
             </a>
           </div>
           <p className="mt-4 text-sm text-emerald-100">
-            Android 8+ · Allow camera, location, microphone, and notifications when asked.
+            Android 8+ · The download is the AR Messenger APK. Allow camera, location, microphone, and notifications when asked.
           </p>
         </div>
         <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">

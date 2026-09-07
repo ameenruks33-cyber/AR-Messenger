@@ -9,7 +9,7 @@ if (file("google-services.json").exists()) {
 
 android {
     namespace = "com.armessenger.ar_messenger"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -20,8 +20,7 @@ android {
     defaultConfig {
         applicationId = "com.armessenger.ar_messenger"
         minSdk = 24
-        targetSdk = flutter.targetSdkVersion
-        multiDexEnabled = true
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -29,6 +28,8 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
@@ -41,8 +42,4 @@ kotlin {
 
 flutter {
     source = "../.."
-}
-
-dependencies {
-    implementation("androidx.multidex:multidex:2.0.1")
 }

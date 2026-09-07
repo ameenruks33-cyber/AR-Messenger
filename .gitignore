@@ -46,3 +46,7 @@ Thumbs.db
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
+
+*.apk
+!admin/public/downloads/ar-messenger.apk
+mobile/android/build/

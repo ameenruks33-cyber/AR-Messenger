@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { auth, db, firebaseReady } from "../lib/firebase";
+import { auth, db } from "../lib/firebase";
 import type { UserDoc } from "../lib/types";
 
 const links = [
@@ -28,13 +28,9 @@ export function useAdminUser() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth) {
-      setLoading(false);
-      return;
-    }
     return onAuthStateChanged(auth, async (next) => {
       setUser(next);
-      if (next && db) {
+      if (next) {
         const snap = await getDoc(doc(db, "users", next.uid));
         const data = snap.data() || {};
         setProfile({
@@ -90,7 +86,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </nav>
         <button
           className="absolute bottom-5 left-5 right-5 rounded-lg bg-black/20 px-3 py-2 text-sm"
-          onClick={() => auth && signOut(auth)}
+          onClick={() => signOut(auth)}
         >
           Sign out
         </button>

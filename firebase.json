@@ -19,5 +19,15 @@
   ],
   "storage": {
     "rules": "storage.rules"
+  },
+  "auth": {
+    "providers": {
+      "emailPassword": true
+    },
+    "authorizedDomains": [
+      "localhost",
+      "ar-messenger.vercel.app",
+      "ar-messenger-app.firebaseapp.com"
+    ]
   }
 }

@@ -1,16 +1,10 @@
-// Template Firebase options. Replace values after running:
-// dart pub global activate flutterfire_cli
-// flutterfire configure --project YOUR_PROJECT_ID --platforms=android,ios --yes
-//
-// Or copy this file to firebase_options.dart and fill the placeholders.
-
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError('Web is not a target for the mobile app.');
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -22,20 +16,29 @@ class DefaultFirebaseOptions {
     }
   }
 
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyAEsADGqY9Kt79Rk_j4K1-PYzzbSxRzU2g',
+    appId: '1:851451981724:web:41455b4930260567112259',
+    messagingSenderId: '851451981724',
+    projectId: 'ar-messenger-app',
+    authDomain: 'ar-messenger-app.firebaseapp.com',
+    storageBucket: 'ar-messenger-app.firebasestorage.app',
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: String.fromEnvironment('FIREBASE_ANDROID_API_KEY', defaultValue: 'YOUR_ANDROID_API_KEY'),
-    appId: String.fromEnvironment('FIREBASE_ANDROID_APP_ID', defaultValue: 'YOUR_ANDROID_APP_ID'),
-    messagingSenderId: String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID', defaultValue: 'YOUR_SENDER_ID'),
-    projectId: String.fromEnvironment('FIREBASE_PROJECT_ID', defaultValue: 'YOUR_PROJECT_ID'),
-    storageBucket: String.fromEnvironment('FIREBASE_STORAGE_BUCKET', defaultValue: 'YOUR_PROJECT_ID.appspot.com'),
+    apiKey: 'AIzaSyB2MoF0TxCIUBRxMyR7TmpeHYj0qpMzKoc',
+    appId: '1:851451981724:android:1135433025e67ef1112259',
+    messagingSenderId: '851451981724',
+    projectId: 'ar-messenger-app',
+    storageBucket: 'ar-messenger-app.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: String.fromEnvironment('FIREBASE_IOS_API_KEY', defaultValue: 'YOUR_IOS_API_KEY'),
-    appId: String.fromEnvironment('FIREBASE_IOS_APP_ID', defaultValue: 'YOUR_IOS_APP_ID'),
-    messagingSenderId: String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID', defaultValue: 'YOUR_SENDER_ID'),
-    projectId: String.fromEnvironment('FIREBASE_PROJECT_ID', defaultValue: 'YOUR_PROJECT_ID'),
-    storageBucket: String.fromEnvironment('FIREBASE_STORAGE_BUCKET', defaultValue: 'YOUR_PROJECT_ID.appspot.com'),
+    apiKey: 'AIzaSyBIaaW1P-78VNVPTQMSKROJxsESLkfTG-I',
+    appId: '1:851451981724:ios:379ec5464c18abe9112259',
+    messagingSenderId: '851451981724',
+    projectId: 'ar-messenger-app',
+    storageBucket: 'ar-messenger-app.firebasestorage.app',
     iosBundleId: 'com.armessenger.arMessenger',
   );
 }

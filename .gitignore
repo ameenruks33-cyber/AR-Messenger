@@ -11,7 +11,7 @@ mobile/ios/.symlinks/
 mobile/ios/Flutter/Flutter.framework
 mobile/ios/Flutter/Flutter.podspec
 mobile/ios/Flutter/ephemeral/
-mobile/android/.gradle/
+mobile/android/.gradle-home/
 mobile/android/local.properties
 mobile/android/app/google-services.json
 mobile/ios/Runner/GoogleService-Info.plist

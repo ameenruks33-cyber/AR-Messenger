@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { auth, db } from "../lib/firebase";
+import { auth, db, firebaseReady } from "../lib/firebase";
 import type { UserDoc } from "../lib/types";
 
 const links = [

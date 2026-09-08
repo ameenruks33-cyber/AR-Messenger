@@ -70,8 +70,12 @@
             <data android:mimeType="*/*"/>
         </intent>
         <intent>
+            <action android:name="android.intent.action.DIAL"/>
+            <data android:scheme="tel"/>
+        </intent>
+        <intent>
             <action android:name="android.intent.action.VIEW"/>
-            <data android:scheme="https"/>
+            <data android:scheme="geo"/>
         </intent>
         <intent>
             <action android:name="android.intent.action.VIEW"/>

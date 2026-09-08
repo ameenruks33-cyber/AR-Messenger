@@ -10,6 +10,8 @@ class StatusPost {
     required this.createdAt,
     required this.expiresAt,
     this.companyOnly = false,
+    this.type = 'text',
+    this.mediaUrl = '',
   });
 
   final String id;
@@ -20,6 +22,8 @@ class StatusPost {
   final DateTime createdAt;
   final DateTime expiresAt;
   final bool companyOnly;
+  final String type;
+  final String mediaUrl;
 
   factory StatusPost.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
@@ -32,6 +36,8 @@ class StatusPost {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       expiresAt: (data['expiresAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       companyOnly: data['companyOnly'] as bool? ?? false,
+      type: data['type'] as String? ?? 'text',
+      mediaUrl: data['mediaUrl'] as String? ?? '',
     );
   }
 }

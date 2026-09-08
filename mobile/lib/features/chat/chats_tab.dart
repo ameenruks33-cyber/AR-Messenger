@@ -20,9 +20,9 @@ class ChatsTab extends StatelessWidget {
         title: const Text('AR Messenger'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.camera_alt_outlined),
-            onPressed: () => Navigator.pushNamed(context, '/company'),
-            tooltip: 'Company',
+            icon: const Icon(Icons.smart_toy_outlined),
+            tooltip: 'AR AI',
+            onPressed: () => Navigator.pushNamed(context, '/ai'),
           ),
           IconButton(
             icon: const Icon(Icons.search),
@@ -115,7 +115,13 @@ class _ChatList extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(color: AppColors.muted),
                   ),
-                  trailing: Text(time, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(time, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                      if (chat.pinned) const Icon(Icons.push_pin, size: 14, color: AppColors.teal),
+                    ],
+                  ),
                   onTap: () => Navigator.pushNamed(context, '/chat', arguments: chat),
                 );
               },

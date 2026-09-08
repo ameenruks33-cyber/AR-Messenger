@@ -57,4 +57,47 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData dark({bool amoled = false}) {
+    final background = amoled ? Colors.black : const Color(0xFF121B22);
+    final base = ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.primary,
+        primary: AppColors.teal,
+        secondary: AppColors.accent,
+        brightness: Brightness.dark,
+      ),
+    );
+    return base.copyWith(
+      textTheme: GoogleFonts.interTextTheme(base.textTheme),
+      scaffoldBackgroundColor: background,
+      navigationBarTheme: NavigationBarThemeData(
+        indicatorColor: const Color(0x3325D366),
+        backgroundColor: background,
+        elevation: 3,
+        labelTextStyle: const WidgetStatePropertyAll(TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: amoled ? Colors.black : const Color(0xFF1F2C34),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.teal,
+        foregroundColor: Colors.white,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF2A3942),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+    );
+  }
 }

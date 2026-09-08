@@ -25,9 +25,11 @@ class StatusService {
     });
   }
 
-  Future<void> postText({
+  Future<void> post({
     required UserProfile profile,
     required String text,
+    String type = 'text',
+    String mediaUrl = '',
     bool companyOnly = false,
   }) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -37,10 +39,19 @@ class StatusService {
       'displayName': profile.displayName,
       'photoUrl': profile.photoUrl,
       'text': text.trim(),
-      'type': 'text',
+      'type': type,
+      'mediaUrl': mediaUrl,
       'companyOnly': companyOnly,
       'createdAt': FieldValue.serverTimestamp(),
       'expiresAt': Timestamp.fromDate(now.add(const Duration(hours: 24))),
     });
+  }
+
+  Future<void> postText({
+    required UserProfile profile,
+    required String text,
+    bool companyOnly = false,
+  }) {
+    return post(profile: profile, text: text, companyOnly: companyOnly);
   }
 }

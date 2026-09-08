@@ -11,10 +11,10 @@ export default function HomePage() {
         <div>
           <p className="text-emerald-100">Company messenger + attendance</p>
           <h1 className="mt-3 text-4xl font-extrabold leading-tight md:text-5xl">
-            Chat, groups, and GPS check-in in one Android app.
+            Chat, company workspace, and AR AI in one Android app.
           </h1>
           <p className="mt-5 max-w-xl text-emerald-50">
-            Employees register with a phone number, chat like WhatsApp, and check in only when they are inside an authorized office geofence with a live selfie.
+            Employees sign in with a phone number and PIN, then use chats, communities, status, calls, company tools, and on-device AR AI. Check in only inside an authorized office geofence with a live selfie.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
@@ -29,7 +29,7 @@ export default function HomePage() {
             </a>
           </div>
           <p className="mt-4 text-sm text-emerald-100">
-            Android 8+ · Free login uses your phone number and a 6-digit PIN. No paid SMS. Allow camera, location, microphone, and notifications when asked.
+            Android 8+ · Version 1.0.5 · Phone number + 6-digit PIN. Uninstall the old app before installing this one. Allow camera, location, microphone, and notifications when asked.
           </p>
         </div>
         <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
@@ -39,7 +39,8 @@ export default function HomePage() {
             <li>2. Allow install from this browser if Android asks</li>
             <li>3. Open AR Messenger</li>
             <li>4. Enter your mobile number and a 6-digit PIN</li>
-            <li>5. Use Company → Check In at the office</li>
+            <li>5. Open Company for attendance, tasks, leave, and reports</li>
+            <li>6. Tap AR AI to summarize, translate, or create tasks</li>
           </ol>
         </div>
       </main>

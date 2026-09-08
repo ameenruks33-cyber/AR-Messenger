@@ -12,6 +12,9 @@ class ChatThread {
     required this.createdBy,
     required this.companyId,
     this.pinned = false,
+    this.pinnedMessageId = '',
+    this.disappearingHours = 0,
+    this.typingUid = '',
   });
 
   final String id;
@@ -24,6 +27,9 @@ class ChatThread {
   final String createdBy;
   final String companyId;
   final bool pinned;
+  final String pinnedMessageId;
+  final int disappearingHours;
+  final String typingUid;
 
   bool get isGroup => type == 'group';
 
@@ -40,6 +46,9 @@ class ChatThread {
       createdBy: data['createdBy'] as String? ?? '',
       companyId: data['companyId'] as String? ?? '',
       pinned: data['pinned'] as bool? ?? false,
+      pinnedMessageId: data['pinnedMessageId'] as String? ?? '',
+      disappearingHours: (data['disappearingHours'] as num?)?.toInt() ?? 0,
+      typingUid: data['typingUid'] as String? ?? '',
     );
   }
 }
@@ -56,6 +65,11 @@ class ChatMessage {
     this.editedAt,
     this.deleted = false,
     this.readBy = const [],
+    this.starredBy = const [],
+    this.reactions = const {},
+    this.latitude,
+    this.longitude,
+    this.expiresAt,
   });
 
   final String id;
@@ -68,9 +82,17 @@ class ChatMessage {
   final DateTime? editedAt;
   final bool deleted;
   final List<String> readBy;
+  final List<String> starredBy;
+  final Map<String, String> reactions;
+  final double? latitude;
+  final double? longitude;
+  final DateTime? expiresAt;
+
+  bool get isExpired => expiresAt != null && expiresAt!.isBefore(DateTime.now());
 
   factory ChatMessage.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
+    final reactionRaw = data['reactions'];
     return ChatMessage(
       id: doc.id,
       senderId: data['senderId'] as String? ?? '',
@@ -82,6 +104,13 @@ class ChatMessage {
       editedAt: (data['editedAt'] as Timestamp?)?.toDate(),
       deleted: data['deleted'] as bool? ?? false,
       readBy: List<String>.from(data['readBy'] ?? const []),
+      starredBy: List<String>.from(data['starredBy'] ?? const []),
+      reactions: reactionRaw is Map
+          ? reactionRaw.map((key, value) => MapEntry(key.toString(), value.toString()))
+          : const {},
+      latitude: (data['latitude'] as num?)?.toDouble(),
+      longitude: (data['longitude'] as num?)?.toDouble(),
+      expiresAt: (data['expiresAt'] as Timestamp?)?.toDate(),
     );
   }
 }

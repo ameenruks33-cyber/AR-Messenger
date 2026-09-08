@@ -30,4 +30,11 @@ class Collections {
   static const notifications = 'notifications';
   static const auditLogs = 'auditLogs';
   static const statuses = 'statuses';
+  static const tasks = 'tasks';
+  static const leaveRequests = 'leaveRequests';
+  static const events = 'events';
+  static const documents = 'companyDocs';
+  static const emergencies = 'emergencies';
+  static const recognition = 'recognition';
+  static const calls = 'calls';
 }

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
+import 'features/ai/ar_ai_screen.dart';
 import 'features/attendance/attendance_screen.dart';
 import 'features/auth/otp_screen.dart';
 import 'features/auth/phone_screen.dart';
@@ -18,6 +19,7 @@ import 'features/profile/settings_screen.dart';
 import 'firebase_options.dart';
 import 'models/chat.dart';
 import 'providers/auth_controller.dart';
+import 'providers/prefs_controller.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -37,40 +39,51 @@ class ArMessengerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthController(),
-      child: MaterialApp(
-        title: AppConstants.appName,
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light(),
-        home: const AuthGate(),
-        onGenerateRoute: (settings) {
-          switch (settings.name) {
-            case '/otp':
-              return MaterialPageRoute(builder: (_) => const OtpScreen());
-            case '/new-chat':
-              return MaterialPageRoute(builder: (_) => const NewChatScreen());
-            case '/new-group':
-              return MaterialPageRoute(builder: (_) => const NewGroupScreen());
-            case '/chat':
-              return MaterialPageRoute(
-                builder: (_) => ChatScreen(chat: settings.arguments as ChatThread),
-              );
-            case '/search':
-              return MaterialPageRoute(builder: (_) => const SearchScreen());
-            case '/settings':
-              return MaterialPageRoute(builder: (_) => const SettingsScreen());
-            case '/company':
-              return MaterialPageRoute(builder: (_) => const CompanyHubScreen());
-            case '/attendance':
-              return MaterialPageRoute(builder: (_) => const AttendanceScreen());
-            case '/attendance-history':
-              return MaterialPageRoute(builder: (_) => const AttendanceHistoryScreen());
-            case '/notices':
-              return MaterialPageRoute(builder: (_) => const NoticesScreen());
-            default:
-              return null;
-          }
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthController()),
+        ChangeNotifierProvider(create: (_) => PrefsController()),
+      ],
+      child: Consumer<PrefsController>(
+        builder: (context, prefs, _) {
+          return MaterialApp(
+            title: AppConstants.appName,
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light(),
+            darkTheme: AppTheme.dark(amoled: prefs.amoled),
+            themeMode: prefs.themeMode,
+            home: const AuthGate(),
+            onGenerateRoute: (settings) {
+              switch (settings.name) {
+                case '/otp':
+                  return MaterialPageRoute(builder: (_) => const OtpScreen());
+                case '/new-chat':
+                  return MaterialPageRoute(builder: (_) => const NewChatScreen());
+                case '/new-group':
+                  return MaterialPageRoute(builder: (_) => const NewGroupScreen());
+                case '/chat':
+                  return MaterialPageRoute(
+                    builder: (_) => ChatScreen(chat: settings.arguments as ChatThread),
+                  );
+                case '/search':
+                  return MaterialPageRoute(builder: (_) => const SearchScreen());
+                case '/settings':
+                  return MaterialPageRoute(builder: (_) => const SettingsScreen());
+                case '/company':
+                  return MaterialPageRoute(builder: (_) => const CompanyHubScreen());
+                case '/attendance':
+                  return MaterialPageRoute(builder: (_) => const AttendanceScreen());
+                case '/attendance-history':
+                  return MaterialPageRoute(builder: (_) => const AttendanceHistoryScreen());
+                case '/notices':
+                  return MaterialPageRoute(builder: (_) => const NoticesScreen());
+                case '/ai':
+                  return MaterialPageRoute(builder: (_) => const ArAiScreen());
+                default:
+                  return null;
+              }
+            },
+          );
         },
       ),
     );

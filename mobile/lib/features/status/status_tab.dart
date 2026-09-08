@@ -57,7 +57,7 @@ class StatusTab extends StatelessWidget {
                 ),
                 title: const Text('My status', style: TextStyle(fontWeight: FontWeight.w700)),
                 subtitle: Text(
-                  mine.isEmpty ? 'Tap to add a status update' : mine.first.text,
+                  mine.isEmpty ? 'Tap to add photo, text, voice, or location' : mine.first.text,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -110,6 +110,7 @@ class StatusTab extends StatelessWidget {
     final profile = context.read<AuthController>().profile;
     if (profile == null) return;
     final text = TextEditingController();
+    String type = 'text';
     final posted = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -121,28 +122,54 @@ class StatusTab extends StatelessWidget {
             top: 16,
             bottom: MediaQuery.of(context).viewInsets.bottom + 16,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text('New status', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 12),
-              TextField(
-                controller: text,
-                maxLength: 500,
-                maxLines: 4,
-                decoration: const InputDecoration(hintText: 'What is happening?'),
-              ),
-              const SizedBox(height: 8),
-              PrimaryButton(
-                label: 'Post',
-                onPressed: () async {
-                  if (text.text.trim().isEmpty) return;
-                  await StatusService().postText(profile: profile, text: text.text);
-                  if (context.mounted) Navigator.pop(context, true);
-                },
-              ),
-            ],
+          child: StatefulBuilder(
+            builder: (context, setModal) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text('New status', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      ChoiceChip(label: const Text('Text'), selected: type == 'text', onSelected: (_) => setModal(() => type = 'text')),
+                      ChoiceChip(label: const Text('Photo'), selected: type == 'image', onSelected: (_) => setModal(() => type = 'image')),
+                      ChoiceChip(label: const Text('Voice'), selected: type == 'audio', onSelected: (_) => setModal(() => type = 'audio')),
+                      ChoiceChip(label: const Text('Location'), selected: type == 'location', onSelected: (_) => setModal(() => type = 'location')),
+                      if (profile.isManagerOrAbove)
+                        ChoiceChip(label: const Text('Announcement'), selected: type == 'announcement', onSelected: (_) => setModal(() => type = 'announcement')),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: text,
+                    maxLength: 500,
+                    maxLines: 4,
+                    decoration: const InputDecoration(hintText: 'What is happening?'),
+                  ),
+                  const SizedBox(height: 8),
+                  PrimaryButton(
+                    label: 'Post',
+                    onPressed: () async {
+                      var value = text.text.trim();
+                      if (value.isEmpty) {
+                        value = switch (type) {
+                          'image' => 'Photo',
+                          'audio' => 'Voice status',
+                          'location' => 'Location',
+                          'announcement' => 'Company announcement',
+                          _ => '',
+                        };
+                      }
+                      if (value.isEmpty) return;
+                      await StatusService().post(profile: profile, text: value, type: type);
+                      if (context.mounted) Navigator.pop(context, true);
+                    },
+                  ),
+                ],
+              );
+            },
           ),
         );
       },

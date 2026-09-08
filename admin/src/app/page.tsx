@@ -18,24 +18,30 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
-              href="/downloads/ar-messenger.apk"
+              href="https://ar-messenger.vercel.app/downloads/ar-messenger.apk"
               download="AR-Messenger.apk"
               className="rounded-full bg-[#25D366] px-6 py-3 font-bold text-[#075E54]"
             >
-              Download Android app
+              Download Android APK
             </a>
             <a href="/login" className="rounded-full border border-white/30 px-6 py-3 font-semibold">
               Open admin dashboard
             </a>
           </div>
           <p className="mt-4 text-sm text-emerald-100">
-            Android 8+ · Version 1.0.5 · Phone number + 6-digit PIN. Uninstall the old app before installing this one. Allow camera, location, microphone, and notifications when asked.
+            Android 8+ · Version 1.0.5 · ~64 MB · Phone number + 6-digit PIN. Uninstall the old app before installing this one.
+          </p>
+          <p className="mt-2 break-all text-xs text-emerald-200">
+            Direct file:{' '}
+            <a className="underline" href="https://ar-messenger.vercel.app/downloads/ar-messenger.apk">
+              https://ar-messenger.vercel.app/downloads/ar-messenger.apk
+            </a>
           </p>
         </div>
         <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
           <h2 className="text-lg font-bold">Install steps</h2>
           <ol className="mt-4 grid gap-3 text-emerald-50">
-            <li>1. Tap Download Android app</li>
+            <li>1. Tap Download Android APK</li>
             <li>2. Allow install from this browser if Android asks</li>
             <li>3. Open AR Messenger</li>
             <li>4. Enter your mobile number and a 6-digit PIN</li>

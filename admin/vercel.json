@@ -1,8 +1,31 @@
 {
   "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/ar-messenger.apk",
+      "destination": "/downloads/ar-messenger.apk"
+    }
+  ],
   "headers": [
     {
       "source": "/downloads/(.*).apk",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.android.package-archive"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"AR-Messenger.apk\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/ar-messenger.apk",
       "headers": [
         {
           "key": "Content-Type",

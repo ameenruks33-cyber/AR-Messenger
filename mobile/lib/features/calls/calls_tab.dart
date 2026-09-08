@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_widgets.dart';
 
 class CallsTab extends StatelessWidget {
@@ -7,12 +8,29 @@ class CallsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      appBar: MessengerAppBar(title: 'Calls'),
-      body: EmptyHint(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Calls'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => Navigator.pushNamed(context, '/settings'),
+          ),
+        ],
+      ),
+      body: const EmptyHint(
         icon: Icons.call_outlined,
-        title: 'Calls come later',
-        subtitle: 'Voice and video calling are planned for Phase 6 after chat and attendance are stable.',
+        title: 'No calls yet',
+        subtitle: 'Voice and video calls are the next module after chat, status, and attendance are stable.',
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.teal,
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Calling ships after messaging is solid.')),
+          );
+        },
+        child: const Icon(Icons.add_call),
       ),
     );
   }

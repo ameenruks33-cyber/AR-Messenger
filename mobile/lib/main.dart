@@ -11,6 +11,7 @@ import 'features/auth/phone_screen.dart';
 import 'features/auth/profile_setup_screen.dart';
 import 'features/chat/chat_screen.dart';
 import 'features/chat/new_chat_screen.dart';
+import 'features/company/company_hub_screen.dart';
 import 'features/contacts/contacts_tab.dart';
 import 'features/home/home_shell.dart';
 import 'features/profile/settings_screen.dart';
@@ -59,6 +60,10 @@ class ArMessengerApp extends StatelessWidget {
               return MaterialPageRoute(builder: (_) => const SearchScreen());
             case '/settings':
               return MaterialPageRoute(builder: (_) => const SettingsScreen());
+            case '/company':
+              return MaterialPageRoute(builder: (_) => const CompanyHubScreen());
+            case '/attendance':
+              return MaterialPageRoute(builder: (_) => const AttendanceScreen());
             case '/attendance-history':
               return MaterialPageRoute(builder: (_) => const AttendanceHistoryScreen());
             case '/notices':

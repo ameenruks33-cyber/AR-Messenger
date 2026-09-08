@@ -29,4 +29,5 @@ class Collections {
   static const announcements = 'announcements';
   static const notifications = 'notifications';
   static const auditLogs = 'auditLogs';
+  static const statuses = 'statuses';
 }

@@ -30,6 +30,12 @@ class AppTheme {
     return base.copyWith(
       textTheme: GoogleFonts.interTextTheme(base.textTheme),
       scaffoldBackgroundColor: Colors.white,
+      navigationBarTheme: const NavigationBarThemeData(
+        indicatorColor: Color(0x3325D366),
+        backgroundColor: Colors.white,
+        elevation: 3,
+        labelTextStyle: WidgetStatePropertyAll(TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+      ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,

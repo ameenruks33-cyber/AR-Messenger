@@ -15,37 +15,37 @@ class ChatsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('AR Messenger'),
-          actions: [
-            IconButton(icon: const Icon(Icons.search), onPressed: () => Navigator.pushNamed(context, '/search')),
-            IconButton(icon: const Icon(Icons.settings_outlined), onPressed: () => Navigator.pushNamed(context, '/settings')),
-          ],
-          bottom: const TabBar(
-            indicatorColor: Colors.white,
-            tabs: [
-              Tab(text: 'Chats'),
-              Tab(text: 'Updates'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('AR Messenger'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.camera_alt_outlined),
+            onPressed: () => Navigator.pushNamed(context, '/company'),
+            tooltip: 'Company',
+          ),
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () => Navigator.pushNamed(context, '/search'),
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'settings') Navigator.pushNamed(context, '/settings');
+              if (value == 'group') Navigator.pushNamed(context, '/new-group');
+              if (value == 'company') Navigator.pushNamed(context, '/company');
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'group', child: Text('New group')),
+              PopupMenuItem(value: 'company', child: Text('Company')),
+              PopupMenuItem(value: 'settings', child: Text('Settings')),
             ],
           ),
-        ),
-        body: const TabBarView(
-          children: [
-            _ChatList(),
-            EmptyHint(
-              icon: Icons.camera_outlined,
-              title: 'Status updates',
-              subtitle: 'Stories and company status will appear here in a later phase.',
-            ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.pushNamed(context, '/new-chat'),
-          child: const Icon(Icons.add),
-        ),
+        ],
+      ),
+      body: const _ChatList(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.pushNamed(context, '/new-chat'),
+        child: const Icon(Icons.chat),
       ),
     );
   }
@@ -68,12 +68,11 @@ class _ChatList extends StatelessWidget {
           return const EmptyHint(
             icon: Icons.chat_bubble_outline,
             title: 'No chats yet',
-            subtitle: 'Start a conversation with a colleague or create a company group.',
+            subtitle: 'Tap the chat button to message a colleague or start a group.',
           );
         }
-        return ListView.separated(
+        return ListView.builder(
           itemCount: chats.length,
-          separatorBuilder: (_, _) => const Divider(height: 1),
           itemBuilder: (context, index) {
             final chat = chats[index];
             return FutureBuilder<UserProfile?>(
@@ -86,12 +85,32 @@ class _ChatList extends StatelessWidget {
                 final photo = chat.isGroup ? chat.photoUrl : (other?.photoUrl ?? '');
                 final time = chat.lastMessageAt == null
                     ? ''
-                    : DateFormat.Hm().format(chat.lastMessageAt!);
+                    : DateFormat('h:mm a').format(chat.lastMessageAt!);
+                final online = !chat.isGroup && other?.isOnline == true;
                 return ListTile(
-                  leading: UserAvatar(name: title, photoUrl: photo),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  leading: Stack(
+                    children: [
+                      UserAvatar(name: title, photoUrl: photo, radius: 26),
+                      if (online)
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: AppColors.accent,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                   title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
                   subtitle: Text(
-                    chat.lastMessage.isEmpty ? 'Tap to open' : chat.lastMessage,
+                    chat.lastMessage.isEmpty ? 'Tap to open chat' : chat.lastMessage,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(color: AppColors.muted),

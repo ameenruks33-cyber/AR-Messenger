@@ -33,15 +33,26 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    _profile = await _auth.loadProfile(user.uid);
-    await _auth.setPresence(true);
-    await _auth.saveFcmToken();
+    loading = true;
+    notifyListeners();
+    try {
+      _profile = await _auth.loadProfile(user.uid).timeout(const Duration(seconds: 8));
+    } catch (_) {
+      _profile = _profile;
+    }
     loading = false;
     notifyListeners();
+    unawaited(_auth.setPresence(true));
+    unawaited(_auth.saveFcmToken());
   }
 
   Future<void> sendOtp(String phone) async {
     pendingPhone = phone;
+    notifyListeners();
+  }
+
+  void clearPendingPhone() {
+    pendingPhone = null;
     notifyListeners();
   }
 
@@ -53,7 +64,24 @@ class AuthController extends ChangeNotifier {
     if (code.length != 6) {
       throw StateError('Enter a 6-digit PIN.');
     }
-    await _auth.signInWithPhonePin(phoneNumber: phone, pin: code);
+    final credential = await _auth
+        .signInWithPhonePin(phoneNumber: phone, pin: code)
+        .timeout(
+          const Duration(seconds: 20),
+          onTimeout: () => throw StateError('Sign-in timed out. Check internet and try again.'),
+        );
+    _user = credential.user;
+    if (_user != null) {
+      try {
+        _profile = await _auth.loadProfile(_user!.uid).timeout(const Duration(seconds: 8));
+      } catch (_) {
+        _profile = null;
+      }
+      loading = false;
+      notifyListeners();
+      unawaited(_auth.setPresence(true));
+      unawaited(_auth.saveFcmToken());
+    }
   }
 
   Future<void> completeProfile({
@@ -66,10 +94,14 @@ class AuthController extends ChangeNotifier {
       phone: pendingPhone,
     );
     if (_user != null) {
-      _profile = await _auth.loadProfile(_user!.uid);
-      await _auth.setPresence(true);
-      await _auth.saveFcmToken();
+      try {
+        _profile = await _auth.loadProfile(_user!.uid).timeout(const Duration(seconds: 8));
+      } catch (_) {
+        _profile = null;
+      }
       notifyListeners();
+      unawaited(_auth.setPresence(true));
+      unawaited(_auth.saveFcmToken());
     }
   }
 

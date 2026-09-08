@@ -26,14 +26,20 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   Future<void> _submit() async {
+    if (_loading) return;
+    final pin = _code.text.trim();
+    if (pin.length != 6) {
+      setState(() => _error = 'Enter all 6 digits, then tap Continue.');
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      await context.read<AuthController>().verifyOtp(_code.text.trim());
+      await context.read<AuthController>().verifyOtp(pin);
     } catch (e) {
-      setState(() => _error = authErrorMessage(e));
+      if (mounted) setState(() => _error = authErrorMessage(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -43,14 +49,21 @@ class _OtpScreenState extends State<OtpScreen> {
   Widget build(BuildContext context) {
     final phone = context.watch<AuthController>().pendingPhone ?? '';
     return Scaffold(
-      appBar: AppBar(title: const Text('Enter PIN')),
-      body: Padding(
+      appBar: AppBar(
+        title: const Text('Enter PIN'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.read<AuthController>().clearPendingPhone(),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'No SMS is used. For $phone, create a 6-digit PIN if this is your first time, or enter the same PIN you already set.',
+              'Create a 6-digit PIN for $phone, or enter the PIN you already use. This is not an SMS code.',
               style: const TextStyle(color: AppColors.muted, height: 1.4),
             ),
             const SizedBox(height: 24),
@@ -58,11 +71,18 @@ class _OtpScreenState extends State<OtpScreen> {
               controller: _code,
               keyboardType: TextInputType.number,
               maxLength: 6,
-              obscureText: true,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _submit(),
+              onChanged: (value) {
+                setState(() {});
+                if (value.length == 6 && !_loading) _submit();
+              },
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: const InputDecoration(
                 labelText: '6-digit PIN',
                 counterText: '',
+                hintText: '123456',
               ),
             ),
             if (_error != null) ...[
@@ -70,9 +90,14 @@ class _OtpScreenState extends State<OtpScreen> {
               Text(_error!, style: const TextStyle(color: AppColors.danger)),
             ],
             const Spacer(),
-            PrimaryButton(label: 'Continue', onPressed: _submit, loading: _loading),
+            PrimaryButton(
+              label: 'Continue',
+              onPressed: _code.text.trim().length == 6 ? _submit : null,
+              loading: _loading,
+            ),
           ],
         ),
+      ),
       ),
     );
   }

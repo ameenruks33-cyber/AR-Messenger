@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +32,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  await FirebaseMessaging.instance.requestPermission();
+  unawaited(FirebaseMessaging.instance.requestPermission());
   runApp(const ArMessengerApp());
 }
 
@@ -102,6 +104,9 @@ class AuthGate extends StatelessWidget {
       );
     }
     if (!auth.isSignedIn) {
+      if (auth.pendingPhone != null && auth.pendingPhone!.isNotEmpty) {
+        return const OtpScreen();
+      }
       return const PhoneScreen();
     }
     if (auth.needsProfile) {

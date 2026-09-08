@@ -3,7 +3,7 @@ export default function DownloadPage() {
     <div className="flex min-h-screen items-center justify-center bg-[#075E54] px-6 text-white">
       <div className="w-full max-w-lg rounded-3xl bg-white/10 p-8 text-center">
         <h1 className="text-3xl font-extrabold">Download AR Messenger</h1>
-        <p className="mt-3 text-emerald-100">Android 8+ · Version 1.0.5 · ~64 MB</p>
+        <p className="mt-3 text-emerald-100">Android 8+ · Version 1.0.6 · ~64 MB</p>
         <a
           href="https://ar-messenger.vercel.app/downloads/ar-messenger.apk"
           download="AR-Messenger.apk"

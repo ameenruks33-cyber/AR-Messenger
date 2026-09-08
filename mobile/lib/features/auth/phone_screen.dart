@@ -38,8 +38,6 @@ class _PhoneScreenState extends State<PhoneScreen> {
     });
     try {
       await context.read<AuthController>().sendOtp(phone);
-      if (!mounted) return;
-      Navigator.of(context).pushNamed('/otp');
     } catch (e) {
       setState(() => _error = authErrorMessage(e));
     } finally {

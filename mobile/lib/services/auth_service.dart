@@ -123,11 +123,13 @@ class AuthService {
     final ref = _db.collection(Collections.users).doc(user.uid);
     final existing = await ref.get();
     if (!existing.exists) return;
-    final token = await FirebaseMessaging.instance.getToken();
-    if (token == null) return;
-    await ref.set({
-      'fcmToken': token,
-    }, SetOptions(merge: true));
+    try {
+      final token = await FirebaseMessaging.instance.getToken().timeout(const Duration(seconds: 5));
+      if (token == null) return;
+      await ref.set({
+        'fcmToken': token,
+      }, SetOptions(merge: true));
+    } catch (_) {}
   }
 
   Future<void> signOut() async {

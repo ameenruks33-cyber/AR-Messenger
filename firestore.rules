@@ -227,6 +227,13 @@ service cloud.firestore {
                 .hasOnly(['displayName', 'photoUrl', 'about', 'isOnline', 'lastSeen', 'fcmToken'])
           )
           || (
+            resource.data.companyId == ''
+            && request.resource.data.companyId.size() > 0
+            && request.resource.data.role == resource.data.role
+            && exists(/databases/$(database)/documents/companies/$(request.resource.data.companyId))
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['companyId'])
+          )
+          || (
             canManageCompanies()
             && request.resource.data.diff(resource.data).affectedKeys()
                 .hasOnly(['displayName', 'photoUrl', 'about', 'isOnline', 'lastSeen', 'fcmToken', 'companyId', 'role'])
@@ -436,6 +443,16 @@ service cloud.firestore {
       );
       allow create: if isAuthenticated() && request.resource.data.callerId == request.auth.uid;
       allow update, delete: if false;
+    }
+
+    match /appUpdates/{updateId} {
+      allow read: if isAuthenticated();
+      allow create, update: if canManageCompanies()
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 200
+        && request.resource.data.seq is number;
+      allow delete: if canManageCompanies();
     }
 
     match /auditLogs/{logId} {

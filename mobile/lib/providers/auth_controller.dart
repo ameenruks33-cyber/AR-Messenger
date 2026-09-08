@@ -14,6 +14,7 @@ class AuthController extends ChangeNotifier {
 
   final AuthService _auth;
   late final StreamSubscription<User?> _sub;
+  StreamSubscription<UserProfile?>? _profileSub;
   User? _user;
   UserProfile? _profile;
   bool loading = true;
@@ -28,6 +29,8 @@ class AuthController extends ChangeNotifier {
   Future<void> _onAuth(User? user) async {
     _user = user;
     if (user == null) {
+      await _profileSub?.cancel();
+      _profileSub = null;
       _profile = null;
       loading = false;
       notifyListeners();
@@ -42,6 +45,11 @@ class AuthController extends ChangeNotifier {
     }
     loading = false;
     notifyListeners();
+    await _profileSub?.cancel();
+    _profileSub = _auth.watchProfile(user.uid).listen((profile) {
+      _profile = profile;
+      notifyListeners();
+    });
     unawaited(_auth.setPresence(true));
     unawaited(_auth.saveFcmToken());
   }
@@ -105,6 +113,14 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  Future<void> applyWorkspaceUpdate(String companyId) async {
+    if (_user == null) return;
+    if ((_profile?.companyId ?? '').isEmpty && companyId.isNotEmpty) {
+      await _auth.joinCompany(companyId);
+    }
+    await refreshProfile();
+  }
+
   Future<void> refreshProfile() async {
     if (_user == null) return;
     _profile = await _auth.loadProfile(_user!.uid);
@@ -115,6 +131,7 @@ class AuthController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _profileSub?.cancel();
     _sub.cancel();
     super.dispose();
   }

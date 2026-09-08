@@ -29,7 +29,7 @@ export default function HomePage() {
             </a>
           </div>
           <p className="mt-4 text-sm text-emerald-100">
-            Android 8+ · Version 1.0.7 · ~64 MB · Phone number + 6-digit PIN. Uninstall the old app before installing this one.
+            Android 8+ · Version 1.0.8 · ~64 MB · Phone number + 6-digit PIN. Uninstall the old app before installing this one.
           </p>
           <p className="mt-2 break-all text-xs text-emerald-200">
             Direct file:{' '}

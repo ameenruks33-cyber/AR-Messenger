@@ -4,6 +4,7 @@ import { addDoc, collection, getDocs, query, where, Timestamp } from "firebase/f
 import { useEffect, useState } from "react";
 import { db, auth } from "../../lib/firebase";
 import { useAdminUser } from "../../components/Shell";
+import { publishMobileUpdate } from "../../lib/publishUpdate";
 
 type Notice = { id: string; title: string; body: string; createdAt: Date };
 
@@ -38,6 +39,11 @@ export default function AnnouncementsPage() {
       body,
       createdBy: auth.currentUser.uid,
       createdAt: Timestamp.now(),
+    });
+    await publishMobileUpdate({
+      message: `${title} was published. Tap Update on your phone.`,
+      companyId: profile.companyId,
+      companyName: title,
     });
     setTitle("");
     setBody("");

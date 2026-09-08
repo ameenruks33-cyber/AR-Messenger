@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { db } from "../../lib/firebase";
 import { useAdminUser } from "../../components/Shell";
+import { publishMobileUpdate } from "../../lib/publishUpdate";
 import type { Employee, Role } from "../../lib/types";
 
 export default function EmployeesPage() {
@@ -39,6 +40,11 @@ export default function EmployeesPage() {
         status: "active",
         department,
         photoUrl: "",
+      });
+      await publishMobileUpdate({
+        message: `${name} was added to employees. Tap Update on your phone.`,
+        companyId: profile.companyId,
+        companyName: name,
       });
       setName("");
       setPhone("+971");

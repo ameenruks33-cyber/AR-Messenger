@@ -16,6 +16,7 @@ class PrefsController extends ChangeNotifier {
   String disappearingDefault = 'off';
   String chatPin = '';
   Set<String> lockedChats = {};
+  int lastAppliedUpdate = 0;
 
   Future<void> _load() async {
     _prefs = await SharedPreferences.getInstance();
@@ -29,6 +30,7 @@ class PrefsController extends ChangeNotifier {
     disappearingDefault = _prefs?.getString('disappearing') ?? 'off';
     chatPin = _prefs?.getString('chatPin') ?? '';
     lockedChats = (_prefs?.getStringList('lockedChats') ?? const []).toSet();
+    lastAppliedUpdate = _prefs?.getInt('lastAppliedUpdate') ?? 0;
     notifyListeners();
   }
 
@@ -86,4 +88,10 @@ class PrefsController extends ChangeNotifier {
   }
 
   bool isLocked(String chatId) => lockedChats.contains(chatId);
+
+  Future<void> setLastAppliedUpdate(int value) async {
+    lastAppliedUpdate = value;
+    await _prefs?.setInt('lastAppliedUpdate', value);
+    notifyListeners();
+  }
 }

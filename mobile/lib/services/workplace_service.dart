@@ -232,6 +232,11 @@ class WorkplaceService {
       'createdAt': FieldValue.serverTimestamp(),
     });
     await _linkAdmin(doc.id);
+    await _notifyPhones(
+      message: '$name is ready. Tap Update on your phone to load it.',
+      companyId: doc.id,
+      companyName: name,
+    );
     return doc.id;
   }
 
@@ -261,6 +266,11 @@ class WorkplaceService {
           ),
         );
     await _linkAdmin(id);
+    await _notifyPhones(
+      message: '$name was updated. Tap Update on your phone.',
+      companyId: id,
+      companyName: name,
+    );
   }
 
   Future<void> deleteCompany(String id) async {
@@ -270,6 +280,27 @@ class WorkplaceService {
     if (user.data()?['companyId'] == id) {
       await userRef.update({'companyId': ''});
     }
+    await _notifyPhones(
+      message: 'A company was deleted. Tap Update on your phone.',
+      companyId: '',
+      companyName: '',
+    );
+  }
+
+  Future<void> _notifyPhones({
+    required String message,
+    required String companyId,
+    required String companyName,
+  }) {
+    return _db.collection(Collections.appUpdates).doc('latest').set({
+      'message': message,
+      'companyId': companyId,
+      'companyName': companyName,
+      'appVersion': AppConstants.appVersion,
+      'apkUrl': AppConstants.apkUrl,
+      'seq': DateTime.now().millisecondsSinceEpoch,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   Future<void> _linkAdmin(String companyId) async {

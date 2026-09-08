@@ -14,6 +14,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { auth, db } from "../../lib/firebase";
 import { useAdminUser } from "../../components/Shell";
+import { publishMobileUpdate } from "../../lib/publishUpdate";
 import type { Company } from "../../lib/types";
 
 const emptyForm = {
@@ -150,15 +151,25 @@ export default function CompaniesPage() {
       if (editingId) {
         await updateDoc(doc(db, "companies", editingId), payload);
         await linkAdmin(editingId);
-        setMessage("Company details updated.");
+        await publishMobileUpdate({
+          message: `${payload.name} was updated. Tap Update on your phone.`,
+          companyId: editingId,
+          companyName: payload.name,
+        });
+        setMessage("Company details updated. Phones will show an Update button.");
       } else {
         const created = await addDoc(collection(db, "companies"), {
           ...payload,
           createdAt: serverTimestamp(),
         });
         await linkAdmin(created.id);
+        await publishMobileUpdate({
+          message: `${payload.name} is ready. Tap Update on your phone to load it.`,
+          companyId: created.id,
+          companyName: payload.name,
+        });
         setEditingId(created.id);
-        setMessage("Company created and linked to this admin account.");
+        setMessage("Company created. Open the mobile app and tap Update.");
       }
       await load();
     } catch (err) {
@@ -176,6 +187,11 @@ export default function CompaniesPage() {
     setError("");
     try {
       await deleteDoc(doc(db, "companies", company.id));
+      await publishMobileUpdate({
+        message: `${company.name} was deleted. Tap Update on your phone.`,
+        companyId: "",
+        companyName: company.name,
+      });
       if (profile?.companyId === company.id && auth.currentUser) {
         await updateDoc(doc(db, "users", auth.currentUser.uid), { companyId: "" });
       }

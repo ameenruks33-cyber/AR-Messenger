@@ -4,6 +4,7 @@ import { addDoc, collection, getDocs, query, updateDoc, doc, where } from "fireb
 import { useEffect, useState } from "react";
 import { db } from "../../lib/firebase";
 import { useAdminUser } from "../../components/Shell";
+import { publishMobileUpdate } from "../../lib/publishUpdate";
 import type { Office } from "../../lib/types";
 
 export default function OfficesPage() {
@@ -37,6 +38,11 @@ export default function OfficesPage() {
       longitude: Number(form.longitude),
       radiusMeters: Number(form.radiusMeters),
       attendanceEnabled: true,
+    });
+    await publishMobileUpdate({
+      message: `${form.name} office was added. Tap Update on your phone.`,
+      companyId: profile.companyId,
+      companyName: form.name,
     });
     setForm({ name: "", city: "", latitude: "25.2048", longitude: "55.2708", radiusMeters: "150" });
     await load();

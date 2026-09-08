@@ -7,6 +7,8 @@ class AppConstants {
   static const suspiciousSpeedKmh = 400.0;
   static const workStartHour = 8;
   static const lateAfterMinutes = 15;
+  static const appVersion = '1.0.8';
+  static const apkUrl = 'https://ar-messenger.vercel.app/downloads/ar-messenger.apk';
 
   static const roles = [
     'super_admin',
@@ -37,4 +39,5 @@ class Collections {
   static const emergencies = 'emergencies';
   static const recognition = 'recognition';
   static const calls = 'calls';
+  static const appUpdates = 'appUpdates';
 }

@@ -47,6 +47,12 @@ class AuthService {
     }
   }
 
+  Future<void> joinCompany(String companyId) async {
+    final user = _auth.currentUser;
+    if (user == null || companyId.isEmpty) return;
+    await _db.collection(Collections.users).doc(user.uid).update({'companyId': companyId});
+  }
+
   Future<UserProfile?> loadProfile(String uid) async {
     final doc = await _db.collection(Collections.users).doc(uid).get();
     if (!doc.exists) return null;

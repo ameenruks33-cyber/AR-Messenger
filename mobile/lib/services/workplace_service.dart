@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../core/constants/app_constants.dart';
 import '../models/attendance_record.dart';
+import '../models/company.dart';
 import '../models/employee.dart';
 import '../models/office.dart';
 import '../models/user_profile.dart';
@@ -175,5 +176,110 @@ class WorkplaceService {
       final snap = await _db.collection(Collections.attendance).where('companyId', isEqualTo: companyId).get();
       return snap.docs.map(AttendanceRecord.fromDoc).where((row) => row.timestamp.isAfter(start)).toList();
     }
+  }
+
+  Stream<List<Company>> watchCompanies() {
+    return _db.collection(Collections.companies).snapshots().map((snap) => snap.docs.map(Company.fromDoc).toList());
+  }
+
+  Map<String, dynamic> _companyData({
+    required String name,
+    String phone = '',
+    String email = '',
+    String address = '',
+    String city = '',
+    String country = '',
+    int workStartHour = 8,
+    int lateAfterMinutes = 15,
+    String notes = '',
+  }) {
+    return {
+      'name': name.trim(),
+      'phone': phone.trim(),
+      'email': email.trim(),
+      'address': address.trim(),
+      'city': city.trim(),
+      'country': country.trim(),
+      'workStartHour': workStartHour,
+      'lateAfterMinutes': lateAfterMinutes,
+      'notes': notes.trim(),
+    };
+  }
+
+  Future<String> createCompany({
+    required String name,
+    String phone = '',
+    String email = '',
+    String address = '',
+    String city = '',
+    String country = 'United Arab Emirates',
+    int workStartHour = 8,
+    int lateAfterMinutes = 15,
+    String notes = '',
+  }) async {
+    final doc = await _db.collection(Collections.companies).add({
+      ..._companyData(
+        name: name,
+        phone: phone,
+        email: email,
+        address: address,
+        city: city,
+        country: country,
+        workStartHour: workStartHour,
+        lateAfterMinutes: lateAfterMinutes,
+        notes: notes,
+      ),
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    await _linkAdmin(doc.id);
+    return doc.id;
+  }
+
+  Future<void> updateCompany({
+    required String id,
+    required String name,
+    String phone = '',
+    String email = '',
+    String address = '',
+    String city = '',
+    String country = '',
+    int workStartHour = 8,
+    int lateAfterMinutes = 15,
+    String notes = '',
+  }) async {
+    await _db.collection(Collections.companies).doc(id).update(
+          _companyData(
+            name: name,
+            phone: phone,
+            email: email,
+            address: address,
+            city: city,
+            country: country,
+            workStartHour: workStartHour,
+            lateAfterMinutes: lateAfterMinutes,
+            notes: notes,
+          ),
+        );
+    await _linkAdmin(id);
+  }
+
+  Future<void> deleteCompany(String id) async {
+    await _db.collection(Collections.companies).doc(id).delete();
+    final userRef = _db.collection(Collections.users).doc(_uid);
+    final user = await userRef.get();
+    if (user.data()?['companyId'] == id) {
+      await userRef.update({'companyId': ''});
+    }
+  }
+
+  Future<void> _linkAdmin(String companyId) async {
+    final userRef = _db.collection(Collections.users).doc(_uid);
+    final user = await userRef.get();
+    if (!user.exists) return;
+    final role = user.data()?['role'] as String? ?? 'employee';
+    await userRef.update({
+      'companyId': companyId,
+      'role': ['super_admin', 'hr_admin', 'company_admin'].contains(role) ? role : 'company_admin',
+    });
   }
 }

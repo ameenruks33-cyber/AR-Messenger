@@ -1,5 +1,18 @@
 export type Role = "super_admin" | "hr_admin" | "company_admin" | "manager" | "employee";
 
+export type Company = {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  country: string;
+  workStartHour: number;
+  lateAfterMinutes: number;
+  notes: string;
+};
+
 export type UserDoc = {
   id: string;
   phone: string;

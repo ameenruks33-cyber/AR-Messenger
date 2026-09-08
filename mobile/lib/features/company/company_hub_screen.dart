@@ -8,6 +8,7 @@ import '../../core/widgets/app_widgets.dart';
 import '../../models/announcement.dart';
 import '../../providers/auth_controller.dart';
 import '../attendance/attendance_screen.dart';
+import 'manage_company_screen.dart';
 import 'workplace_screens.dart';
 
 class CompanyHubScreen extends StatelessWidget {
@@ -46,6 +47,13 @@ class CompanyHubScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          if (profile?.isAdmin == true)
+            _HubTile(
+              icon: Icons.business,
+              title: 'Manage company',
+              subtitle: 'Admin: create, edit, or delete company details',
+              page: const ManageCompanyScreen(),
+            ),
           _HubTile(icon: Icons.people_outline, title: 'Employees', subtitle: 'People in your company', page: const EmployeesScreen()),
           _HubTile(icon: Icons.account_tree_outlined, title: 'Departments', subtitle: 'Teams and groups', page: const DepartmentsScreen()),
           _HubTile(icon: Icons.apartment_outlined, title: 'Offices', subtitle: 'Locations and geofences', page: const OfficesScreen()),

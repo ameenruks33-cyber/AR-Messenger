@@ -10,6 +10,7 @@ import type { UserDoc } from "../lib/types";
 
 const links = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/companies", label: "Companies" },
   { href: "/employees", label: "Employees" },
   { href: "/offices", label: "Offices" },
   { href: "/attendance", label: "Attendance" },

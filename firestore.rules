@@ -82,6 +82,34 @@ service cloud.firestore {
       return isAuthenticated() && userRole() in ['super_admin', 'hr_admin', 'company_admin', 'manager'];
     }
 
+    function isPinUserEmail() {
+      return request.auth.token.email is string
+        && request.auth.token.email.matches('^[0-9]+@users[.]armessenger[.]app$');
+    }
+
+    function isDashboardAdmin() {
+      return isAuthenticated()
+        && request.auth.token.email is string
+        && request.auth.token.email.size() > 5
+        && !isPinUserEmail();
+    }
+
+    function canManageCompanies() {
+      return isAdmin() || isDashboardAdmin();
+    }
+
+    function isValidCompany(data) {
+      return isValidString(data.name, 2, 80)
+        && data.phone is string && data.phone.size() <= 20
+        && data.email is string && data.email.size() <= 120
+        && data.address is string && data.address.size() <= 200
+        && data.city is string && data.city.size() <= 80
+        && data.country is string && data.country.size() <= 80
+        && data.workStartHour is number && data.workStartHour >= 0 && data.workStartHour <= 23
+        && data.lateAfterMinutes is number && data.lateAfterMinutes >= 0 && data.lateAfterMinutes <= 180
+        && data.notes is string && data.notes.size() <= 500;
+    }
+
     function sameCompany(companyId) {
       return exists(userPath()) && userData().companyId is string && userData().companyId == companyId && companyId.size() > 0;
     }
@@ -175,18 +203,36 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == uid
         && isValidUser(request.resource.data)
-        && request.resource.data.role == 'employee'
-        && request.resource.data.companyId == ''
-        && request.resource.data.employeeId == '';
+        && (
+          (
+            request.resource.data.role == 'employee'
+            && request.resource.data.companyId == ''
+            && request.resource.data.employeeId == ''
+          )
+          || (
+            isDashboardAdmin()
+            && request.resource.data.role in ['company_admin', 'hr_admin', 'super_admin']
+          )
+        );
       allow update: if isAuthenticated()
         && request.auth.uid == uid
         && isValidUser(request.resource.data)
-        && request.resource.data.role == resource.data.role
-        && request.resource.data.companyId == resource.data.companyId
         && request.resource.data.employeeId == resource.data.employeeId
         && request.resource.data.phone == resource.data.phone
-        && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['displayName', 'photoUrl', 'about', 'isOnline', 'lastSeen', 'fcmToken']);
+        && (
+          (
+            request.resource.data.role == resource.data.role
+            && request.resource.data.companyId == resource.data.companyId
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['displayName', 'photoUrl', 'about', 'isOnline', 'lastSeen', 'fcmToken'])
+          )
+          || (
+            canManageCompanies()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['displayName', 'photoUrl', 'about', 'isOnline', 'lastSeen', 'fcmToken', 'companyId', 'role'])
+            && request.resource.data.role in ['super_admin', 'hr_admin', 'company_admin', 'manager', 'employee']
+          )
+        );
       allow delete: if false;
     }
 
@@ -201,9 +247,10 @@ service cloud.firestore {
     }
 
     match /companies/{companyId} {
-      allow read: if isAuthenticated() && sameCompany(companyId);
-      allow create, update: if isHrOrAbove();
-      allow delete: if false;
+      allow read: if isAuthenticated() && (canManageCompanies() || sameCompany(companyId));
+      allow create: if canManageCompanies() && isValidCompany(request.resource.data);
+      allow update: if canManageCompanies() && isValidCompany(request.resource.data);
+      allow delete: if canManageCompanies();
     }
 
     match /offices/{officeId} {
